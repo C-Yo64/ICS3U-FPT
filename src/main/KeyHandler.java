@@ -22,6 +22,7 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_SPACE) {
             if (gp.gameState == gp.playState) {
                 spaceP = true;
+                gp.network.sendMessage(gp.network.out, "jump");
             }
 
 //			if(gp.gameState == gp.startState) {
@@ -49,10 +50,12 @@ public class KeyHandler implements KeyListener {
             case "play":
                 if (code == KeyEvent.VK_A) {
                     leftP = true;
+                    rightP = false;
                     gp.network.sendMessage(gp.network.out, "left");
                 }
                 if (code == KeyEvent.VK_D) {
                     rightP = true;
+                    leftP = false;
                     gp.network.sendMessage(gp.network.out, "right");
                 }
                 if (code == KeyEvent.VK_W) {
@@ -71,6 +74,10 @@ public class KeyHandler implements KeyListener {
                     eP = true;
                     if (gp.gameState == gp.pauseState) {
                         gp.gameState = gp.playState;
+                    }
+                    if (gp.gameState == gp.playState) {
+                        gp.network.sendMessage(gp.network.out, "start");
+                        gp.player.initialize();
                     }
                 }
 
@@ -98,34 +105,36 @@ public class KeyHandler implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
+        if (gp.gameState == gp.playState) {
+            if (code == KeyEvent.VK_A) {
+                leftP = false;
+                gp.network.sendMessage(gp.network.out, "!left");
+            }
+            if (code == KeyEvent.VK_D) {
+                rightP = false;
+                gp.network.sendMessage(gp.network.out, "!right");
+            }
+            if (code == KeyEvent.VK_W) {
+                upP = false;
+                gp.network.sendMessage(gp.network.out, "!up");
+            }
+            if (code == KeyEvent.VK_S) {
+                downP = false;
+                gp.network.sendMessage(gp.network.out, "!down");
+            }
+            if (code == KeyEvent.VK_E) {
+                eP = false;
+            }
 
-        if (code == KeyEvent.VK_A) {
-            leftP = false;
-            gp.network.sendMessage(gp.network.out, "!left");
-        }
-        if (code == KeyEvent.VK_D) {
-            rightP = false;
-            gp.network.sendMessage(gp.network.out, "!right");
-        }
-        if (code == KeyEvent.VK_W) {
-            upP = false;
-            gp.network.sendMessage(gp.network.out, "!up");
-        }
-        if (code == KeyEvent.VK_S) {
-            downP = false;
-            gp.network.sendMessage(gp.network.out, "!down");
-        }
-        if (code == KeyEvent.VK_E) {
-            eP = false;
-        }
+            //we will also turn it off just in case
+            if (code == KeyEvent.VK_ENTER) {
+                enterP = false;
+            }
 
-        //we will also turn it off just in case
-        if (code == KeyEvent.VK_ENTER) {
-            enterP = false;
-        }
-
-        if (code == KeyEvent.VK_SPACE) {
-            spaceP = false;
+            if (code == KeyEvent.VK_SPACE) {
+                spaceP = false;
+                gp.network.sendMessage(gp.network.out, "!jump");
+            }
         }
     }
 

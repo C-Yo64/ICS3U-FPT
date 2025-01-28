@@ -1,6 +1,6 @@
 package main;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 public class Main {
 
@@ -15,6 +15,9 @@ public class Main {
 		
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);
-		
+
+		// Add the window/taskbar icon
+		ImageIcon img = new ImageIcon(Main.class.getResource("/sprites/logo.png"));
+		window.setIconImage(img.getImage());
 	}
 }

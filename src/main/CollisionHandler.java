@@ -3,6 +3,8 @@ package main;
 import entity.Entity;
 import tile.TileManager;
 
+import java.awt.*;
+
 public class CollisionHandler {
 
     GamePanel gp;
@@ -13,7 +15,7 @@ public class CollisionHandler {
         this.tileManager = tileManager;
     }
 
-    public boolean isColliding(int posX, int posY, int size) {
+    public boolean isColliding(int posX, int posY, int size, boolean checkForDeadlyTiles) {
         int tileSize = gp.tileSize;
 
         int leftTile = posX / tileSize;
@@ -21,10 +23,19 @@ public class CollisionHandler {
         int topTile = posY / tileSize;
         int bottomTile = (posY + size - 1) / tileSize;
 
+        if (checkForDeadlyTiles) {
+            if (isTileDeadly(leftTile, topTile) ||
+                    isTileDeadly(rightTile, topTile) ||
+                    isTileDeadly(leftTile, bottomTile) ||
+                    isTileDeadly(rightTile, bottomTile)) {
+                gp.player.gameOver();
+            }
+        }
+
         if (isTileCollidable(leftTile, topTile) ||
-            isTileCollidable(rightTile, topTile) ||
-            isTileCollidable(leftTile, bottomTile) ||
-            isTileCollidable(rightTile, bottomTile)) {
+                isTileCollidable(rightTile, topTile) ||
+                isTileCollidable(leftTile, bottomTile) ||
+                isTileCollidable(rightTile, bottomTile)) {
             return true;
         }
 
@@ -32,14 +43,26 @@ public class CollisionHandler {
     }
 
     private boolean isTileCollidable(int col, int row) {
-    	
+
         if (col >= 0 && col < tileManager.mapTileNum.length && row >= 0 && row < tileManager.mapTileNum[0].length) {
             int tileNum = tileManager.mapTileNum[col][row];
             return tileManager.tiles[tileNum].collision;
         }
         return false;
     }
-    
+
+    boolean isTileDeadly(int col, int row) {
+        if (col >= 0 && col < tileManager.mapTileNum.length && row >= 0 && row < tileManager.mapTileNum[0].length) {
+            int tileNum = tileManager.mapTileNum[col][row];
+            if (tileManager.tiles[tileNum].collision) {
+                if (tileManager.tiles[tileNum].color.equals(Color.BLACK)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public boolean isEntityColliding(Entity ent1, Entity ent2) {
         // Get the bounding box of entity 1
         int ent1Left = ent1.solidX;
@@ -55,9 +78,9 @@ public class CollisionHandler {
 
         // Check for overlap
         if (ent1Right > ent2Left &&
-            ent1Left < ent2Right &&
-            ent1Bottom > ent2Top &&
-            ent1Top < ent2Bottom) {
+                ent1Left < ent2Right &&
+                ent1Bottom > ent2Top &&
+                ent1Top < ent2Bottom) {
             return true;
         }
 

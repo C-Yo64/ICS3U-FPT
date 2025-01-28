@@ -46,7 +46,7 @@ public class Entity {
     public void loadCurrentSprite() {
         switch (direction) {
             case "up":
-            case "!up":
+//            case "!up":
                 if (spriteNum == 1) {
                     image = up1;
                 }
@@ -62,7 +62,7 @@ public class Entity {
                 break;
 
             case "down":
-            case "!down":
+//            case "!down":
                 if (spriteNum == 1) {
                     image = down1;
                 }
@@ -78,7 +78,7 @@ public class Entity {
                 break;
 
             case "left":
-            case "!left":
+//            case "!left":
                 if (spriteNum == 1) {
                     image = left1;
                 }
@@ -94,7 +94,7 @@ public class Entity {
                 break;
 
             case "right":
-            case "!right":
+//            case "!right":
                 if (spriteNum == 1) {
                     image = right1;
                 }

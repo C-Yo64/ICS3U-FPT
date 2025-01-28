@@ -15,6 +15,10 @@ public class Sound {
 	//sound effects / music you will want to implement
 	public Sound() {
 		soundURL[0] = getClass().getResource("/sound/collect_coin.wav");
+		soundURL[1] = getClass().getResource("/sound/jump.wav");
+		soundURL[2] = getClass().getResource("/sound/hit.wav");
+		soundURL[3] = getClass().getResource("/sound/explosion.wav");
+		soundURL[4] = getClass().getResource("/sound/music.wav");
 	}
 	
 	//When we want to play a sound we will set the "Clip" to the 

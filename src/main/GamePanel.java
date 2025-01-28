@@ -36,10 +36,8 @@ public class GamePanel extends JPanel implements Runnable {
 	public Network network = new Network(this);
 	public Menu menu = new Menu(this, network);
 
-	//We are going to make a new object that handles sounds
 	public Sound se = new Sound();
 
-	//If you want music, I would make a separate variable to handle that
 	public Sound music = new Sound();
 
 	public KeyHandler keyH = new KeyHandler(this);
@@ -68,11 +66,8 @@ public class GamePanel extends JPanel implements Runnable {
 	}
 
 	private void startup() {
-//		for(int i = 0; i < 20; i++) {
-//			npcs.add(new TreeDude(this, collisionHandler, i, 3));
-//		}
 		npcs.add(new HorseBuggy(this, collisionHandler));
-		npcs.add(new ManNPC(this, collisionHandler, 6, 6));
+		npcs.add(new ManNPC(this, collisionHandler, 999, 999));
 		npcs.add(new Player2(this, collisionHandler, 14, 10));
 		
 		//preload all our images for our projectiles to avoid lag
@@ -138,13 +133,6 @@ public class GamePanel extends JPanel implements Runnable {
 			    }
 			}
 		}
-		else if(gameState == startState) {
-			//We don't technically need anything in here unless you
-			//want to add in something like menu options that you can
-			//"scroll" through, if that is the case you may want to 
-			//add some logic here
-			//you don't need this at all if you want just a simple title screen
-		}
 	
 	}
 	
@@ -195,20 +183,18 @@ public class GamePanel extends JPanel implements Runnable {
 		projectiles.add(p);
 		
 	}
-	
-	//A new method will handle playing our sound effects
+
 	public void playSE(int index) {
 		se.setFile(index);
 		se.play();
 	}
-	
-	//in case you want background music to play continuously
+
 	public void playMusic(int index) {
 		music.setFile(index);
 		music.play();
 		music.loop();
 	}
-	//When you want music to stop, call this method
+
 	public void stopMusic() {
 		music.stop();
 	}

@@ -39,8 +39,8 @@ public class HorseBuggy extends Entity {
 	}
 	
 	private void initialize() {
-		worldX = gp.tileSize * 22;
-		worldY = gp.tileSize * 1;
+		worldX = gp.tileSize * 999;
+		worldY = gp.tileSize * 999;
 		size = gp.tileSize;
 		buggyPosX = worldX + size;
 		buggyPosY = worldY;		
@@ -185,7 +185,7 @@ public class HorseBuggy extends Entity {
 			spriteCounter = 0;
 		}
 		
-		if (!colH.isColliding(newX, newY, size) && !colH.isEntityColliding(gp.player, this)) {
+		if (!colH.isColliding(newX, newY, size, false) && !colH.isEntityColliding(gp.player, this)) {
             worldX = newX;
             worldY = newY;
             buggyPosX = newBX;
@@ -193,7 +193,7 @@ public class HorseBuggy extends Entity {
             
             
         }
-		else if(colH.isColliding(newX, newY, size)) {
+		else if(colH.isColliding(newX, newY, size, false)) {
 			stuck--;
 		}
 		else if(colH.isEntityColliding(gp.player, this)){

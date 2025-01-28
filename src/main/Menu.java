@@ -23,7 +23,7 @@ public class Menu {
     List<String> menuOptions;
     int selectedOption;
 
-    String status;
+    public String status;
     public String winner = "";
 
     Thread networkThread;
@@ -42,7 +42,7 @@ public class Menu {
     private void initialize() {
         // The menuOptions stores an array of all the current buttons on the menu
         // The selectedOption stores the one that's currently being highlighted
-        menuOptions = Arrays.asList(/*"Single Player", */"Multiplayer");
+        menuOptions = Arrays.asList(/*"Single Player", */"Play");
         selectedOption = 0;
 
         // Status determines the text displayed at the bottom of the screen
@@ -51,7 +51,7 @@ public class Menu {
 
         // Set up images
         try {
-            logo = ImageIO.read(getClass().getResourceAsStream("/sprites/tetris-logo.png"));
+            logo = ImageIO.read(getClass().getResourceAsStream("/sprites/logo_white.png"));
             bg = ImageIO.read(getClass().getResourceAsStream("/sprites/menuBG0.jpg"));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -83,7 +83,7 @@ public class Menu {
 //                gp.player.grayBlocksAnimation(gp.grayBlocksAnim, false);
 //                gp.player.initialize();
 //                break;
-            case "Multiplayer":
+            case "Play":
                 // Goes to the multiplayer selection screen
                 selectedOption = 0;
                 menuOptions = Arrays.asList("Host", "Join", "Back");
@@ -147,60 +147,11 @@ public class Menu {
                 }).start();
                 break;
             case "Join":
-                // Change the menu to show options for joining another player
-                selectedOption = 0;
-                menuOptions = Arrays.asList("Same PC", "LAN", " Back ");
-                break;
-            case "Same PC":
-                // Automatically sets the IP to connect to the same computer, then joins a game hosted there
+//                // Change the menu to show options for joining another player
+//                selectedOption = 0;
+//                menuOptions = Arrays.asList("Same PC", "LAN", " Back ");
+//                break;
 
-                // Set the menu to indicate joining
-                status = "joining";
-                menuOptions = Arrays.asList(" Back ");
-
-                // Set the IP to localhost (the same as 127.0.0.1) which sets it to look for other programs on the same computer
-                network.ip = "localhost";
-
-                // Show a JFrame text field where the user can enter the port number to join
-                port = JOptionPane.showInputDialog(null, "Enter the Host's port");
-                if (port == null || port.trim().isEmpty()) {
-                    // Show an error if no port number gets entered, and stop joining
-                    JOptionPane.showMessageDialog(null, "Error: No port entered", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                try {
-                    // Get the number entered in the text field and assign it to the network port
-                    network.port = Integer.parseInt(port);
-                } catch (NumberFormatException e) {
-                    // Show an error if an integer can't be extracted from the text entered
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Error: Invalid port entered", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                // Try to join the host game on the port entered, and show an error if it doesn't work
-                networkThread = new Thread(() -> {
-                    try {
-                        network.Client();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Error: Couldn't connect to the host", "Error", JOptionPane.ERROR_MESSAGE);
-                        status = "";
-                    }
-                });
-                networkThread.start();
-
-                // Continuously check if it's connected, and update the menu once it is
-                new Thread(() -> {
-                    while (true) {
-                        if (network.connected) {
-                            status = "joined player";
-                            return;
-                        }
-                    }
-                }).start();
-                break;
-            case "LAN":
                 // Prompts the user to enter the local IP and port of the host, then joins the game hosted there
 
                 // Show a JFrame text field where the user can enter the IP address to join
@@ -254,11 +205,114 @@ public class Menu {
                     }
                 }).start();
                 break;
+            case "Same PC":
+                // Automatically sets the IP to connect to the same computer, then joins a game hosted there
+
+                // Set the menu to indicate joining
+                status = "joining";
+                menuOptions = Arrays.asList(" Back ");
+
+                // Set the IP to localhost (the same as 127.0.0.1) which sets it to look for other programs on the same computer
+                network.ip = "localhost";
+
+                // Show a JFrame text field where the user can enter the port number to join
+                port = JOptionPane.showInputDialog(null, "Enter the Host's port");
+                if (port == null || port.trim().isEmpty()) {
+                    // Show an error if no port number gets entered, and stop joining
+                    JOptionPane.showMessageDialog(null, "Error: No port entered", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                try {
+                    // Get the number entered in the text field and assign it to the network port
+                    network.port = Integer.parseInt(port);
+                } catch (NumberFormatException e) {
+                    // Show an error if an integer can't be extracted from the text entered
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error: Invalid port entered", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Try to join the host game on the port entered, and show an error if it doesn't work
+                networkThread = new Thread(() -> {
+                    try {
+                        network.Client();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error: Couldn't connect to the host", "Error", JOptionPane.ERROR_MESSAGE);
+                        status = "";
+                    }
+                });
+                networkThread.start();
+
+                // Continuously check if it's connected, and update the menu once it is
+                new Thread(() -> {
+                    while (true) {
+                        if (network.connected) {
+                            status = "joined player";
+                            return;
+                        }
+                    }
+                }).start();
+                break;
+//            case "LAN":
+//                // Prompts the user to enter the local IP and port of the host, then joins the game hosted there
+//
+//                // Show a JFrame text field where the user can enter the IP address to join
+//                String ip = JOptionPane.showInputDialog(null, "Enter the Host's IP Address");
+//                if (ip == null || ip.trim().isEmpty()) {
+//                    // Show an error if no IP gets entered, and stop joining
+//                    JOptionPane.showMessageDialog(null, "Error: No IP address entered", "Error", JOptionPane.ERROR_MESSAGE);
+//                    return;
+//                }
+//                // Set the IP to join to the one that was entered
+//                network.ip = ip;
+//
+//                // Show a JFrame text field where the user can enter the port number to join
+//                port = JOptionPane.showInputDialog(null, "Enter the Host's port");
+//                if (port == null || port.trim().isEmpty()) {
+//                    // Show an error if no port number gets entered, and stop joining
+//                    JOptionPane.showMessageDialog(null, "Error: No port entered", "Error", JOptionPane.ERROR_MESSAGE);
+//                    return;
+//                }
+//                try {
+//                    // Get the number entered in the text field and assign it to the network port
+//                    network.port = Integer.parseInt(port);
+//                } catch (NumberFormatException e) {
+//                    // Show an error if an integer can't be extracted from the text entered
+//                    e.printStackTrace();
+//                    JOptionPane.showMessageDialog(null, "Error: Invalid port entered", "Error", JOptionPane.ERROR_MESSAGE);
+//                    return;
+//                }
+//
+//                // Try to join the host game on the port entered, and show an error if it doesn't work
+//                status = "joining";
+//                menuOptions = Arrays.asList(" Back ");
+//                networkThread = new Thread(() -> {
+//                    try {
+//                        network.Client();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                        JOptionPane.showMessageDialog(null, "Error: Couldn't connect to the host", "Error", JOptionPane.ERROR_MESSAGE);
+//                        status = "";
+//                    }
+//                });
+//
+//                // Continuously check if it's connected, and update the menu once it is
+//                networkThread.start();
+//                new Thread(() -> {
+//                    while (true) {
+//                        if (network.connected) {
+//                            status = "joined player";
+//                            return;
+//                        }
+//                    }
+//                }).start();
+//                break;
 
             case "Back":
                 // Return to the first menu
                 selectedOption = 0;
-                menuOptions = Arrays.asList(/*"Single Player", */"Multiplayer");
+                menuOptions = Arrays.asList(/*"Single Player", */"Play");
                 break;
             case " Back ":
                 // Stop all network functions and return to the multiplayer menu
@@ -294,7 +348,9 @@ public class Menu {
             case "Start":
 //                // Send a signal to the other player to start then game, and then start it with the transition animation
                 network.sendMessage(network.out, "start");
+                gp.player.initialize();
                 gp.gameState = gp.playState;
+                gp.playMusic(4);
 //                gp.player.grayBlocksAnimation(gp.grayBlocksAnim, false);
 //                gp.player.initialize();
                 break;
@@ -309,8 +365,11 @@ public class Menu {
 
         // Load the menu with the winner updating depending on the youLost parameter
         // In multiplayer, the person who lost runs the function with youLost as true, and sends a message to the other player to run the function with youLost as false
-        gp.gameState = "menu";
+        gp.gameState = gp.startState;
         winner = youLost ? "p2" : "p1"; // inline if statement, p1 is always the current player and p2 is the other player
+
+        gp.stopMusic();
+        gp.playSE(3);
 
         // If you're the host, show the start button, otherwise just show the back button
         if (status.equals("hosting") || status.equals("host player")) {
@@ -334,10 +393,11 @@ public class Menu {
 //
 //        // Play the transition animation and go to the main menu
 //        gp.player.grayBlocksAnimation(gp.grayBlocksAnim, false);
-//        gp.gameState = "menu";
-//        menuOptions = Arrays.asList("Single Player", "Multiplayer");
-//        status = "disconnected";
-//        winner = "";
+        gp.gameState = gp.startState;
+        menuOptions = Arrays.asList("Play");
+        status = "disconnected";
+        winner = "";
+        gp.stopMusic();
     }
 
     public void update() {
@@ -347,7 +407,7 @@ public class Menu {
     public void draw(Graphics2D g2) {
         // Draw the background and logo first
         g2.drawImage(bg, 0, 0, gp.screenWidth, gp.screenHeight, null);
-        g2.drawImage(logo, (gp.screenWidth - (1000 / (gp.tileSize / 5))) / 2, gp.tileSize / 2, 1000 / (gp.tileSize / 5), 694 / (gp.tileSize / 5), null);
+        g2.drawImage(logo, (gp.screenWidth - (1706 / (gp.tileSize / 8))) / 2, gp.tileSize / 2, 1706 / (gp.tileSize / 8), 831 / (gp.tileSize / 8), null);
 
         // Show all the current menu options in the middle of the screen, with the selected one being bolded
         for (int i = 0; i < menuOptions.size(); i++) {

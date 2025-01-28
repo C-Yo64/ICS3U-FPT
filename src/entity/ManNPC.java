@@ -95,7 +95,7 @@ public class ManNPC extends Entity {
         	}
         }
         
-		if(!colH.isColliding(solidX, solidY, solidSize) && !colH.isEntityColliding(this, gp.player) && !colidesWithNPC) {
+		if(!colH.isColliding(solidX, solidY, solidSize, false) && !colH.isEntityColliding(this, gp.player) && !colidesWithNPC) {
 			worldX = newX;
 			worldY = newY;
 		}

@@ -5,19 +5,28 @@ import main.GamePanel;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class Player2 extends Entity {
     GamePanel gp;
     CollisionHandler colH;
 
-    boolean jumping;
+    BufferedImage attackImage;
+    BufferedImage jumpRight, jumpLeft;
+
+    public boolean jumping;
     boolean canJump;
 
-    float momentum;
+    public boolean attacking;
+
+    public float yMomentum;
+    public float xMomentum;
     boolean falling;
     float fallSpeed;
+    float horizontalDrag;
     float jumpSpeed;
+    public float launchSpeed = 12F;
 
     public Player2(GamePanel gp, CollisionHandler colH, int spawnX, int spawnY) {
         this.gp = gp;
@@ -28,20 +37,24 @@ public class Player2 extends Entity {
     private void setDefaultValues(int spawnX, int spawnY) {
         worldX = spawnX;
         worldY = spawnY;
-        direction = "down";
+        direction = "!right";
         size = gp.tileSize;
-        speed = 1;
+        speed = gp.player.speed;
         solidSize = size / 2;
         solidSizeX = solidSize;
         solidSizeY = solidSize;
 
-        momentum = 0;
+        yMomentum = 0;
+        xMomentum = 0;
         falling = false;
         fallSpeed = 0.5F;
+        horizontalDrag = 0.5F;
 
         canJump = false;
         jumpSpeed = 15F;
         jumping = false;
+
+        attacking = false;
 
         loadImages();
     }
@@ -73,127 +86,167 @@ public class Player2 extends Entity {
             left3 = spriteSheet.getSubimage(frameWidth * 2, frameHeight * 3, frameWidth, frameHeight);
             left4 = spriteSheet.getSubimage(frameWidth * 3, frameHeight * 3, frameWidth, frameHeight);
 
+            jumpRight = spriteSheet.getSubimage(0, frameHeight * 4, frameWidth, frameHeight);
+            jumpLeft = spriteSheet.getSubimage(frameWidth, frameHeight * 4, frameWidth, frameHeight);
+
+            attackImage = ImageIO.read(getClass().getResourceAsStream("/sprites/swoosh_black.png"));
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    // The normal player movement code is simulated here (altered a bit to account for the other player's position on the screen)
+    // The other player sends their keyboard inputs and the direction they're facing, so this uses that
+    // Every 80ms, the other player will send their coordinates to correct any desyncs
     public void update() {
+
         int newX = worldX;
         int newY = worldY;
 
-        // Update solid collision box
-        solidX = worldX + (size / 4);
-        solidY = worldY + (size / 2) - speed;
+//        npcDirectionChange();
 
-//        // Handle projectile firing if applicable
-//        if (projectileDirection != null && projectileCooldown <= 0) {
-//            Projectile p = new Projectile(gp, colH, worldX, worldY, projectileDirection);
-//            gp.addProjectile(p);
-//            projectileCooldown = projectileCooldownMax;
-//        }
-//        projectileCooldown--;
 
-        // Handle jumping based on jump request
+        switch (direction) {
+            case "up":
+                newY -= speed;
+                if (colH.isColliding(newX + (size / 4), newY + (size / 2) - speed, solidSize, false)) {
+                    newY += speed;
+                }
+                falling = false;
+                break;
+            case "down":
+                newY += speed;
+                if (colH.isColliding(newX + (size / 4), newY + (size / 2) - speed, solidSize, false)) {
+                    newY -= speed;
+                }
+                break;
+            case "left":
+                newX -= speed;
+                if (colH.isColliding(newX + (size / 4), newY + (size / 2) - speed, solidSize, false)) {
+                    newX += speed;
+                }
+                break;
+            case "right":
+                newX += speed;
+                if (colH.isColliding(newX + (size / 4), newY + (size / 2) - speed, solidSize, false)) {
+                    newX -= speed;
+                }
+                break;
+        }
+
         if (jumping && canJump) {
-            if (colH.isColliding(solidX, (int) (solidY + 1), solidSize)) {
-                System.out.println("Player 2 jump");
-                momentum = -jumpSpeed;
+            if (colH.isColliding(newX + (size / 4), (int) ((newY + (size / 2) - speed) + 1), solidSize, false)) {
+                yMomentum = -jumpSpeed;
                 falling = true;
                 canJump = false;
+                gp.playSE(1);
             }
         }
 
-        // Apply gravity and handle falling
+        // Apply gravity if Player 2 is falling
         if (falling) {
-            momentum += fallSpeed;
-            if (!colH.isColliding(solidX, (int) (solidY + momentum), solidSize)) {
-                newY += momentum;
-                solidY += momentum;
+//            canJump = false;
+            yMomentum += fallSpeed;
+            if (xMomentum > 0) {
+                xMomentum -= horizontalDrag;
+            }
+            if (xMomentum < 0) {
+                xMomentum += horizontalDrag;
+            }
+            if (!colH.isColliding((newX + (size / 4)) + (int) xMomentum, (newY + (size / 2) - speed) + (int) yMomentum, solidSize, false)) {
+                newY += (int) yMomentum;
+                newX += (int) xMomentum;
+//                solidY += (int) yMomentum;
             } else {
-                momentum = 0;
+                // Collision detected below, stop falling
+                yMomentum = 0;
+                xMomentum = 0;
                 falling = false;
                 canJump = true;
             }
         } else {
-            momentum = 0;
-            if (!colH.isColliding(solidX, (int) (solidY + 1), solidSize)) {
+            // Check if Player 2 should start falling
+            if (!colH.isColliding(newX + (size / 4), (newY + (size / 2) - speed) + 1, solidSize, false)) {
                 falling = true;
             }
         }
 
-        // Handle movement based on direction variable
-        if (direction != null && !direction.isEmpty()) {
-            switch(direction) {
-                case "left":
-                    if (!colH.isColliding(solidX - speed, solidY, solidSize)) {
-                        newX -= speed;
-                        solidX -= speed;
-                    }
-                    break;
-                case "right":
-                    if (!colH.isColliding(solidX + speed, solidY, solidSize)) {
-                        newX += speed;
-                        solidX += speed;
-                    }
-                    break;
-                case "up":
-                    if (!colH.isColliding(solidX, solidY - speed, solidSize)) {
-                        newY -= speed;
-                        solidY -= speed;
-                    }
-                    falling = false;
-                    break;
-                case "down":
-                    // Depending on game mechanics, "down" could initiate falling or other actions
-                    falling = true;
-                    break;
-            }
+        solidX = newX + (size / 4);
+        solidY = newY + (size / 2) - speed;
 
-            // Update sprite animation
-            spriteCounter++;
-            if (spriteCounter > 8) {
-                spriteNum = (spriteNum % 4) + 1; // Cycles spriteNum between 1 and 4
-                spriteCounter = 0;
-            }
-        }
-
-        // Check for collisions with NPCs and Player 1
-        boolean collidesWithEntity = false;
+        boolean colidesWithNPC = false;
         for (Entity npc : gp.npcs) {
-            if (colH.isEntityColliding(this, npc)) {
-                gp.playSE(0); // Play collision sound effect
-                collidesWithEntity = true;
-                break;
+            if (colH.isEntityColliding(this, npc) && npc != this) {
+                colidesWithNPC = true;
             }
         }
-        if (!collidesWithEntity && colH.isEntityColliding(this, gp.player)) {
-            gp.playSE(0);
-            collidesWithEntity = true;
-        }
 
-        // Apply the new position if no collisions are detected
-        if (!collidesWithEntity) {
+        if (!colH.isColliding(solidX, solidY, solidSize, false) && !colH.isEntityColliding(this, gp.player) && !colidesWithNPC) {
             worldX = newX;
             worldY = newY;
         }
 
-//        // Reset jump request after processing
-//        jumpRequest = false;      
+        incrementSpriteNumber();
     }
 
 
     public void draw(Graphics2D g2) {
-        loadCurrentSprite();
+//        loadCurrentSprite();
 
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
         int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-        if(worldX > gp.player.worldX - gp.player.screenX - gp.tileSize &&
+        // Jumping/falling sprites
+        if (yMomentum < 0) {
+            switch (direction) {
+                case "left":
+                case "!left":
+                    image = jumpLeft;
+                    break;
+                case "right":
+                case "!right":
+                    image = jumpRight;
+                    break;
+            }
+        }
+        if (yMomentum > 0) {
+            // Since the "!" directions don't have sprites associated with them, convert the "!" directions into the positive ones, load the sprite, then change them back
+            String oldDirection = direction;
+            switch (direction) {
+                case "!left":
+                    direction = "left";
+                    break;
+                case "!right":
+                    direction = "right";
+                    break;
+            }
+            loadCurrentSprite();
+            direction = oldDirection;
+        }
+
+        if (yMomentum == 0) {
+            loadCurrentSprite();
+        }
+
+        if (worldX > gp.player.worldX - gp.player.screenX - gp.tileSize &&
                 worldX < gp.player.worldX + gp.player.screenX + gp.tileSize &&
                 worldY > gp.player.worldY - gp.player.screenX - gp.tileSize &&
                 worldY < gp.player.worldY + gp.player.screenX + gp.tileSize) {
             g2.drawImage(image, screenX, screenY, size, size, null);
+        }
+
+        if (attacking) {
+            switch (direction) {
+                case "right":
+                case "!right":
+                    g2.drawImage(attackImage, screenX + size * 2, screenY, -size, size, null);
+                    break;
+                case "left":
+                case "!left":
+                    g2.drawImage(attackImage, screenX - size, screenY, size, size, null);
+                    break;
+            }
         }
     }
 }
